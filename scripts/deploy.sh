@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+source scripts/aws-tools.sh
+
+# Check dependencies
+source scripts/depcheck.sh
+depcheck jq
+depcheck aws
+
+prefix="longtrail-$DEPLOY_ENV"
+
+deployStack deployment-prereq.yml $prefix-deployments
+deploymentBucket=$(getStackOutput $prefix-deployments DeploymentBucket)
+
+deployLambdaCode $deploymentBucket api
+LAMBDA_S3_VERSION=$(getLatestVersion $deploymentBucket "lambdas/api.zip")
+echo "version: $LAMBDA_S3_VERSION"
+
+deployStack longtrail.yml $prefix "
+    --capabilities CAPABILITY_IAM
+    --parameter-overrides
+        APILambdaKey=lambdas/api.zip
+        APILambdaVersion=$LAMBDA_S3_VERSION
+        DeploymentBucket=$deploymentBucket"
