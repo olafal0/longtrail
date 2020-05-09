@@ -1,0 +1,251 @@
+Parameters:
+  DeploymentBucket:
+    Type: String
+  APILambdaKey:
+    Type: String
+  APILambdaVersion:
+    Type: String
+
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        # - PolicyName: CognitoPolicy
+        #   PolicyDocument:
+        #     Statement:
+        #       - Effect: Allow
+        #         Action: cognito-idp:*
+        #         Resource: !GetAtt LongtrailUserPool.Arn
+        - PolicyName: AllowLogging
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt APIHandlerLogGroup.Arn
+              - Effect: Allow
+                Action: cloudwatch:PutMetricData
+                Resource: '*'
+        - PolicyName: AllowDynamoAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: dynamodb:*
+                Resource:
+                  - !GetAtt EventsTable.Arn
+                  - !Sub ${EventsTable.Arn}/index/*
+
+  APIHandlerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AWS::StackName}-api'
+      RetentionInDays: 30
+
+  APIHandlerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-api'
+      Timeout: 30
+      Environment:
+        Variables:
+          # COGNITO_USER_POOL_ID: !Ref LongtrailUserPool
+          EVENTS_TABLE_NAME: !Ref EventsTable
+      Handler: longtrail-api
+      Runtime: go1.x
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref APILambdaKey
+        S3ObjectVersion: !Ref APILambdaVersion
+
+  APIHandlerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref APIHandlerLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAPI}/*/*/*
+
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-events
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: startTime
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: userId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: userId-startTime-index
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: startTime
+              KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  BackendAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${AWS::StackName}-backend-api
+      EndpointConfiguration:
+        Types:
+          - EDGE
+
+  BackendAPIMainResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt BackendAPI.RootResourceId
+      PathPart: '{proxy+}'
+      RestApiId: !Ref BackendAPI
+
+  BackendAPIProxy:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE # COGNITO_USER_POOLS
+      # AuthorizerId: !Ref LongtrailAPICognitoAuthorizer
+      # ApiKeyRequired: true
+      HttpMethod: ANY
+      ResourceId: !Ref BackendAPIMainResource
+      RestApiId: !Ref BackendAPI
+      RequestParameters:
+        method.request.path.proxy: true
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${APIHandlerLambda.Arn}/invocations
+
+  # BackendAPIDeployment will not update by default
+  BackendAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref BackendAPI
+    DependsOn:
+      - BackendAPIProxy
+
+  BackendAPIStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref BackendAPI
+      DeploymentId: !Ref BackendAPIDeployment
+      StageName: api
+  # BackendAPIKey:
+  #   Type: AWS::ApiGateway::ApiKey
+  #   DependsOn:
+  #     - BackendAPIDeployment
+  #   Properties:
+  #     Enabled: true
+  #     StageKeys:
+  #       - RestApiId: !Ref BackendAPI
+  #         StageName: !Ref BackendAPIStage
+  # BackendAPIUsagePlan:
+  #   Type: AWS::ApiGateway::UsagePlan
+  #   DependsOn:
+  #     - BackendAPIKey
+  #   Properties:
+  #     ApiStages:
+  #       - ApiId: !Ref BackendAPI
+  #         Stage: !Ref BackendAPIStage
+  # BackendAPIUsagePlanKey:
+  #   Type: AWS::ApiGateway::UsagePlanKey
+  #   DependsOn:
+  #     - BackendAPIUsagePlan
+  #   Properties:
+  #     KeyId: !Ref BackendAPIKey
+  #     KeyType: API_KEY
+  #     UsagePlanId: !Ref BackendAPIUsagePlan
+  # LongtrailUserPool:
+  #   Type: AWS::Cognito::UserPool
+  #   Properties:
+  #     Schema:
+  #       - Name: teacherId
+  #         AttributeDataType: String
+  #         DeveloperOnlyAttribute: true
+  #         Mutable: true
+  #     AdminCreateUserConfig:
+  #       UnusedAccountValidityDays: 30
+  #       InviteMessageTemplate:
+  #         EmailSubject: Welcome to Longtrail@GMCMF
+  #         EmailMessage:
+  #           '<p>You have been invited to use Longtrail to schedule your
+  #           lessons for this session of GMCMF. You can log in at the following link:</p>
+  #           <p><tbd></p>
+  #           <p>
+  #           Username: {username}<br>
+  #           Temporary password: {####}
+  #           </p>
+  #           <p>You will be asked to change your password on first login.</p>
+  #           <p>Thank you!</p>'
+  #     UserPoolName: !Sub '${AWS::StackName}-userpool'
+  #     AutoVerifiedAttributes:
+  #       - email
+  #     # EmailConfiguration:
+  #     #   ReplyToEmailAddress:
+  #     Policies:
+  #       PasswordPolicy:
+  #         MinimumLength: 8
+  #         RequireLowercase: false
+  #         RequireNumbers: false
+  #         RequireSymbols: false
+  #         RequireUppercase: false
+  # LongtrailUserPoolAdminGroup:
+  #   Type: AWS::Cognito::UserPoolGroup
+  #   Properties:
+  #     GroupName: Admin
+  #     UserPoolId: !Ref LongtrailUserPool
+  # LongtrailAPICognitoAuthorizer:
+  #   Type: AWS::ApiGateway::Authorizer
+  #   Properties:
+  #     Name: !Sub '${AWS::StackName}-api-authorizer'
+  #     IdentitySource: method.request.header.Authorization
+  #     ProviderARNs:
+  #       - !GetAtt LongtrailUserPool.Arn
+  #     RestApiId: !Ref BackendAPI
+  #     Type: COGNITO_USER_POOLS
+  # LongtrailDefaultUser:
+  #   Type: AWS::Cognito::UserPoolUser
+  #   Properties:
+  #     DesiredDeliveryMediums:
+  #       - EMAIL
+  #     Username:
+  #     UserPoolId: !Ref LongtrailUserPool
+  #     UserAttributes:
+  #       - Name: email
+  #         Value:
+  # LongtrailDefaultUserAdminAttachment:
+  #   Type: AWS::Cognito::UserPoolUserToGroupAttachment
+  #   Properties:
+  #     GroupName: !Ref LongtrailUserPoolAdminGroup
+  #     Username: !Ref LongtrailDefaultUser
+  #     UserPoolId: !Ref LongtrailUserPool
+  # LongtrailDefaultUserTeacherAttachment:
+  #   Type: AWS::Cognito::UserPoolUserToGroupAttachment
+  #   Properties:
+  #     GroupName: !Ref LongtrailUserPoolTeacherGroup
+  #     Username: !Ref LongtrailDefaultUser
+  #     UserPoolId: !Ref LongtrailUserPool
+  # LongtrailCognitoWebClient:
+  #   Type: AWS::Cognito::UserPoolClient
+  #   Properties:
+  #     UserPoolId: !Ref LongtrailUserPool

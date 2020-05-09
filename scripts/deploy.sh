@@ -13,13 +13,13 @@ prefix="longtrail-$DEPLOY_ENV"
 deployStack deployment-prereq.yml $prefix-deployments
 deploymentBucket=$(getStackOutput $prefix-deployments DeploymentBucket)
 
-deployLambdaCode $deploymentBucket api
-LAMBDA_S3_VERSION=$(getLatestVersion $deploymentBucket "lambdas/api.zip")
+deployLambdaCode $deploymentBucket longtrail-api
+LAMBDA_S3_VERSION=$(getLatestVersion $deploymentBucket "lambdas/longtrail-api.zip")
 echo "version: $LAMBDA_S3_VERSION"
 
 deployStack longtrail.yml $prefix "
     --capabilities CAPABILITY_IAM
     --parameter-overrides
-        APILambdaKey=lambdas/api.zip
+        APILambdaKey=lambdas/longtrail-api.zip
         APILambdaVersion=$LAMBDA_S3_VERSION
         DeploymentBucket=$deploymentBucket"

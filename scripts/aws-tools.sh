@@ -38,9 +38,14 @@ function getLatestVersion {
 }
 
 function deployStack {
+    # Disable exiting on error so that we can display custom error output
+    set +e
     aws cloudformation deploy --template-file $1 --stack-name $2 --no-fail-on-empty-changeset $3
-
     ERR=$?
+
+    # Re-enable exit on error
+    set -e
+
     if [[ $ERR -ne 0 ]]; then
         echo "Deployment of $2 failed with error $ERR! Events:" >&2
         aws cloudformation describe-stack-events --stack-name $2 --max-items 10 \

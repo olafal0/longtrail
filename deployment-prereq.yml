@@ -7,7 +7,7 @@ Resources:
         Status: Enabled
       LifecycleConfiguration:
         Rules:
-          - NoncurrentVersionExpirationInDays: 14
+          - NoncurrentVersionExpirationInDays: 7
             Status: Enabled
 Outputs:
   DeploymentBucket:
