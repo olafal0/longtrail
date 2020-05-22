@@ -13,8 +13,6 @@
   let calendar;
   export let config;
 
-  const event = [];
-
   onMount(() => {
     calendar = new Calendar(domCalendar, {
       plugins: [timeGridPlugin, interaction],
