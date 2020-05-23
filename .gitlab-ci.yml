@@ -56,7 +56,7 @@ pages:
   script:
     - cd web
     - npm ci
-    - ./node_modules/parcel/bin/cli.js build index.html --no-source-maps
+    - ./node_modules/parcel/bin/cli.js build index.html --no-source-maps --public-url ./longtrail
     - cp -r dist ../public
   artifacts:
     paths:
