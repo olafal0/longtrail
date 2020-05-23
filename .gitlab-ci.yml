@@ -1,4 +1,4 @@
-image: golang:latest
+image: registry.gitlab.com/olafalo/longtrail/builder
 
 stages:
   - test
@@ -24,10 +24,6 @@ deploy development:
       - 'longtrail-api/**/*'
       - deployment-prereq.yml
       - longtrail.yml
-  before_script:
-    - apt-get update
-    - apt-get install -y zip jq python-pip
-    - pip install awscli --upgrade
   script:
     - ./scripts/deploy.sh development
     - ./scripts/generate-config.sh development
@@ -41,14 +37,6 @@ deploy production:
   only:
     refs:
       - master
-    changes:
-      - 'longtrail-api/**/*'
-      - deployment-prereq.yml
-      - longtrail.yml
-  before_script:
-    - apt-get update
-    - apt-get install -y zip jq python-pip
-    - pip install awscli --upgrade
   script:
     - ./scripts/deploy.sh production
     - ./scripts/generate-config.sh production
