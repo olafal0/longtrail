@@ -1,4 +1,4 @@
-image: golang:latest
+image: longtrail-builder:latest
 
 stages:
   - test
@@ -15,10 +15,6 @@ test:
 
 deploy development:
   stage: deploy-dev
-  before_script:
-    - apt-get update
-    - apt-get install -y zip jq python-pip
-    - pip install awscli --upgrade
   script:
     - ./scripts/deploy.sh development
     - ./scripts/generate-config.sh development
@@ -32,10 +28,6 @@ deploy production:
   only:
     refs:
       - master
-  before_script:
-    - apt-get update
-    - apt-get install -y zip jq python-pip
-    - pip install awscli --upgrade
   script:
     - ./scripts/deploy.sh production
     - ./scripts/generate-config.sh production
