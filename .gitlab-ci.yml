@@ -4,6 +4,7 @@ stages:
   - test
   - deploy-dev
   - deploy-prod
+  - deploy-pages
 
 test:
   stage: test
@@ -43,3 +44,21 @@ deploy production:
     paths:
       - web/config.js
     expire_in: 7 days
+
+pages:
+  image: node:latest
+  stage: deploy-pages
+  dependencies:
+    - deploy production
+  only:
+    refs:
+      - master
+  script:
+    - cd web
+    - npm ci
+    - parcel build index.html
+    - cp -r dist ../pages
+  artifacts:
+    paths:
+      - pages
+    expire_in: 7 day

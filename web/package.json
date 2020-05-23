@@ -5,19 +5,17 @@
   "main": "index.js",
   "author": "olafalo",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
+    "@aws-amplify/auth": "^3.2.8",
+    "@fullcalendar/core": "^4.4.0",
     "@fullcalendar/interaction": "^4.4.0",
     "@fullcalendar/timegrid": "^4.4.0",
+    "bootstrap": "^4.5.0",
     "parcel": "^1.12.4",
+    "parcel-bundler": "^1.12.4",
     "parcel-plugin-svelte": "^4.0.6",
     "sass": "^1.26.5",
     "svelte": "^3.22.3",
-    "typescript": "^3.8.3"
-  },
-  "dependencies": {
-    "@aws-amplify/auth": "^3.2.6",
-    "@fullcalendar/core": "^4.4.0",
-    "aws-amplify": "^3.0.11",
-    "bootstrap": "^4.5.0"
+    "typescript": "^3.9.3"
   }
 }
