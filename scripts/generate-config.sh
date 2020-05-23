@@ -8,24 +8,24 @@ source scripts/depcheck.sh
 depcheck jq
 depcheck aws
 
-dev_prefix="longtrail-development"
+if [[ -z "$1" ]]; then
+  export DEPLOY_ENV=development
+else
+  export DEPLOY_ENV=$1
+fi
 
-DEV_BACKEND_API_ID=$(getStackOutput $dev_prefix BackendAPIId)
-DEV_USER_POOL_ID=$(getStackOutput $dev_prefix UserPoolId)
-DEV_WEB_CLIENT_ID=$(getStackOutput $dev_prefix WebClientId)
+prefix="longtrail-$DEPLOY_ENV"
 
-echo "let config;
+BACKEND_API_ID=$(getStackOutput $prefix BackendAPIId)
+USER_POOL_ID=$(getStackOutput $prefix UserPoolId)
+WEB_CLIENT_ID=$(getStackOutput $prefix WebClientId)
 
-if (process.env.NODE_ENV === 'development') {
-  config = {
-    Auth: {
-      region: 'us-east-1',
-      userPoolId: '$DEV_USER_POOL_ID',
-      userPoolWebClientId: '$DEV_WEB_CLIENT_ID',
-    },
-    apiUrl: 'https://$DEV_BACKEND_API_ID.execute-api.us-east-1.amazonaws.com/api',
-  };
+echo "export default {
+  Auth: {
+    region: 'us-east-1',
+    userPoolId: '$USER_POOL_ID',
+    userPoolWebClientId: '$WEB_CLIENT_ID',
+  },
+  apiUrl: 'https://$BACKEND_API_ID.execute-api.us-east-1.amazonaws.com/api',
 }
-
-export default config;
 " > web/config.js

@@ -1,0 +1,45 @@
+image: golang:latest
+
+stages:
+  - test
+  - deploy-dev
+  - deploy-prod
+
+test:
+  stage: test
+  script:
+    - cd longtrail-api
+    - go fmt
+    - go vet
+    - COVERAGE=`go test -cover -race ./...`
+
+deploy development:
+  stage: deploy
+  before_script:
+    - apt-get update
+    - apt-get install -y zip jq python-pip
+    - pip install awscli --upgrade
+  script:
+    - ./scripts/deploy.sh development
+    - ./scripts/generate-config.sh development
+  artifacts:
+    paths:
+      - web/config.js
+    expire_in: 7 days
+
+deploy production:
+  stage: deploy-prod
+  only:
+    refs:
+      - master
+  before_script:
+    - apt-get update
+    - apt-get install -y zip jq python-pip
+    - pip install awscli --upgrade
+  script:
+    - ./scripts/deploy.sh production
+    - ./scripts/generate-config.sh production
+  artifacts:
+    paths:
+      - web/config.js
+    expire_in: 7 days

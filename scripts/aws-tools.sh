@@ -14,8 +14,12 @@ else
     aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
     aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
     echo "Configured aws cli"
-    export DEPLOY_ENV=$CI_COMMIT_REF_NAME
-    echo "Set DEPLOY_ENV=$CI_COMMIT_REF_NAME"
+    if [[ -z "$1" ]]; then
+        export DEPLOY_ENV=$CI_COMMIT_REF_NAME
+    else
+        export DEPLOY_ENV=$1
+    fi
+    echo "Set DEPLOY_ENV=$DEPLOY_ENV"
 fi
 
 function getResourceId {
