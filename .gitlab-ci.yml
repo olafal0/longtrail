@@ -14,7 +14,7 @@ test:
     - COVERAGE=`go test -cover -race ./...`
 
 deploy development:
-  stage: deploy
+  stage: deploy-dev
   before_script:
     - apt-get update
     - apt-get install -y zip jq python-pip
