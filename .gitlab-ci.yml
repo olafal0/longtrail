@@ -57,8 +57,7 @@ pages:
     - cd web
     - npm ci
     - ./node_modules/parcel/bin/cli.js build index.html
-    - cp -r dist ../pages
+    - cp -r dist ../public
   artifacts:
     paths:
-      - pages
-    expire_in: 7 day
+      - public
