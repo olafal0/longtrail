@@ -8,6 +8,9 @@ stages:
 
 test:
   stage: test
+  only:
+    changes:
+      - 'longtrail-api/**/*'
   script:
     - cd longtrail-api
     - go fmt
@@ -16,6 +19,11 @@ test:
 
 deploy development:
   stage: deploy-dev
+  only:
+    changes:
+      - 'longtrail-api/**/*'
+      - deployment-prereq.yml
+      - longtrail.yml
   before_script:
     - apt-get update
     - apt-get install -y zip jq python-pip
@@ -33,6 +41,10 @@ deploy production:
   only:
     refs:
       - master
+    changes:
+      - 'longtrail-api/**/*'
+      - deployment-prereq.yml
+      - longtrail.yml
   before_script:
     - apt-get update
     - apt-get install -y zip jq python-pip
@@ -56,7 +68,7 @@ pages:
   script:
     - cd web
     - npm ci
-    - parcel build index.html
+    - ./node_modules/parcel/bin/cli.js build index.html
     - cp -r dist ../pages
   artifacts:
     paths:
