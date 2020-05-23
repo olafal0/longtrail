@@ -6,7 +6,7 @@ aws configure set default.region us-east-1
 if [[ -z $GITLAB_CI ]]; then
     echo "Running locally"
     if [[ -z "$1" ]]; then
-        export DEPLOY_ENV=testing
+        export DEPLOY_ENV=development
     else
         export DEPLOY_ENV=$1
     fi

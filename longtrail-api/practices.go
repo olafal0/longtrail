@@ -2,16 +2,44 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"longtrail-api/dbinterface"
+	"net/http"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/flick-web/dispatch"
 )
 
 var errorMissingID = errors.New("no id specified")
+var errorUnauthorized = errors.New(http.StatusText(http.StatusUnauthorized))
+var errorInternal = errors.New(http.StatusText(http.StatusInternalServerError))
+
+func ctxToUserID(ctx events.APIGatewayProxyRequestContext) (id string, err error) {
+	// AWS wraps claims.sub inside of an interface{}, inside of a map[string]interface{},
+	// inside of another map[string]interface{}. This means there are four different
+	// points at which this function might panic if we don't explicitly error check.
+	// This is ridiculous, so just assume everything will go fine and recover in
+	// case of panic.
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("ctxToUserID panic: %v\n", r)
+			err = errorInternal
+			return
+		}
+	}()
+	claims := ctx.Authorizer["claims"]
+	claimsMap := claims.(map[string]interface{})
+	userID := claimsMap["sub"]
+	id = userID.(string)
+	return id, nil
+}
 
 func createPractice(practice *dbinterface.Practice, ctx *dispatch.Context) (id string, err error) {
-	userID := ctx.LambdaRequest.RequestContext.Identity.User
+	userID, err := ctxToUserID(ctx.LambdaRequest.RequestContext)
+	if err != nil {
+		return "", err
+	}
 	practice.UserID = userID
 	return db.CreatePractice(*practice)
 }
@@ -21,7 +49,10 @@ func getPractice(ctx *dispatch.Context) (*dbinterface.Practice, error) {
 	if !ok {
 		return nil, errorMissingID
 	}
-	userID := ctx.LambdaRequest.RequestContext.Identity.User
+	userID, err := ctxToUserID(ctx.LambdaRequest.RequestContext)
+	if err != nil {
+		return nil, err
+	}
 	return db.GetPractice(id, userID)
 }
 
@@ -46,12 +77,18 @@ func getPractices(ctx *dispatch.Context) ([]dbinterface.Practice, error) {
 		}
 	}
 
-	userID := ctx.LambdaRequest.RequestContext.Identity.User
+	userID, err := ctxToUserID(ctx.LambdaRequest.RequestContext)
+	if err != nil {
+		return nil, err
+	}
 	return db.GetPractices(userID, windowStart, windowEnd)
 }
 
 func setPractice(practice dbinterface.Practice, ctx *dispatch.Context) error {
-	userID := ctx.LambdaRequest.RequestContext.Identity.User
+	userID, err := ctxToUserID(ctx.LambdaRequest.RequestContext)
+	if err != nil {
+		return err
+	}
 	practice.UserID = userID
 	return db.SetPractice(practice)
 }
@@ -61,6 +98,9 @@ func deletePractice(ctx *dispatch.Context) error {
 	if !ok {
 		return errorMissingID
 	}
-	userID := ctx.LambdaRequest.RequestContext.Identity.User
+	userID, err := ctxToUserID(ctx.LambdaRequest.RequestContext)
+	if err != nil {
+		return err
+	}
 	return db.DeletePractice(id, userID)
 }

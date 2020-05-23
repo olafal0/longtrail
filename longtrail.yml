@@ -131,6 +131,24 @@ Resources:
       RestApiId: !Ref BackendAPI
       RequestParameters:
         method.request.path.proxy: true
+        method.request.header.Authorization: true
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${APIHandlerLambda.Arn}/invocations
+
+  # Define a specific OPTIONS endpoint without authorization. This is required for
+  # CORS preflight requests, which do not include authorization information.
+  BackendAPIOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      # ApiKeyRequired: true
+      HttpMethod: OPTIONS
+      ResourceId: !Ref BackendAPIMainResource
+      RestApiId: !Ref BackendAPI
+      RequestParameters:
+        method.request.path.proxy: true
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -143,6 +161,7 @@ Resources:
       RestApiId: !Ref BackendAPI
     DependsOn:
       - BackendAPIProxy
+      - BackendAPIOptions
 
   BackendAPIStage:
     Type: AWS::ApiGateway::Stage
@@ -220,7 +239,7 @@ Resources:
   LongtrailAPICognitoAuthorizer:
     Type: AWS::ApiGateway::Authorizer
     Properties:
-      Name: !Sub "${AWS::StackName}-api-authorizer"
+      Name: !Sub ${AWS::StackName}-api-authorizer
       IdentitySource: method.request.header.Authorization
       ProviderARNs:
         - !GetAtt LongtrailUserPool.Arn
@@ -256,3 +275,5 @@ Outputs:
     Value: !Ref LongtrailUserPool
   WebClientId:
     Value: !Ref LongtrailCognitoWebClient
+  BackendAPIId:
+    Value: !Ref BackendAPI
