@@ -10,18 +10,21 @@ import config from './config';
 
 async function echo() {
   const response = await requests.get(`${config.apiUrl}/echo`);
-  console.log(response);
 }
 
 async function createPractice({ start, end }) {
   const response = await requests.post(`${config.apiUrl}/practices/new`, {
-    startTime: start,
-    endTime: end,
+    start: start,
+    end: end,
   });
   return response;
 }
-async function getPractice() {}
-async function getPractices() {}
+async function getPractice(id: string) {
+  return await requests.get(`${config.apiUrl}/practice/${id}`);
+}
+async function getPractices(start, end) {
+  return await requests.get(`${config.apiUrl}/practices`, { start, end });
+}
 async function setPractice() {}
 async function deletePractice() {}
 

@@ -23,13 +23,13 @@ func NewModifier(cfg *config.LongtrailConfig) DatabaseModifier {
 				PrimaryKey: "id",
 				SortKey:    "userId",
 				Indexes: map[string]DynamoIndex{
-					"userId-startTime-index": DynamoIndex{
+					"userId-start-index": DynamoIndex{
 						PrimaryKey: "userId",
-						SortKey:    "startTime",
+						SortKey:    "start",
 					},
 				},
 			},
-			UserTimeIndexName: "userId-startTime-index",
+			UserTimeIndexName: "userId-start-index",
 		},
 	}
 

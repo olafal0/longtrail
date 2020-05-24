@@ -26,9 +26,9 @@ func TestPracticesInterface(t *testing.T) {
 	now := time.Now()
 
 	practice := database.Practice{
-		UserID:    "userId",
-		StartTime: now,
-		EndTime:   now.Add(60 * time.Minute),
+		UserID: "userId",
+		Start:  now,
+		End:    now.Add(60 * time.Minute),
 	}
 
 	db := database.NewModifier(conf)
@@ -42,11 +42,11 @@ func TestPracticesInterface(t *testing.T) {
 		t.Log(err)
 		t.FailNow()
 	}
-	if !resultPractice.StartTime.Equal(practice.StartTime) || !resultPractice.EndTime.Equal(practice.EndTime) {
+	if !resultPractice.Start.Equal(practice.Start) || !resultPractice.End.Equal(practice.End) {
 		t.Errorf(
 			"Practice times did not match: %v to %v (expected %v to %v)\n",
-			resultPractice.StartTime, resultPractice.EndTime,
-			practice.StartTime, practice.EndTime,
+			resultPractice.Start, resultPractice.End,
+			practice.Start, practice.End,
 		)
 	}
 

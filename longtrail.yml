@@ -85,7 +85,7 @@ Resources:
           AttributeType: S
         - AttributeName: userId
           AttributeType: S
-        - AttributeName: startTime
+        - AttributeName: start
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
@@ -94,13 +94,13 @@ Resources:
         - AttributeName: userId
           KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: userId-startTime-index
+        - IndexName: userId-start-index
           Projection:
             ProjectionType: ALL
           KeySchema:
             - AttributeName: userId
               KeyType: HASH
-            - AttributeName: startTime
+            - AttributeName: start
               KeyType: RANGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true

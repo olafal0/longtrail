@@ -22,8 +22,8 @@ type PracticeModifier interface {
 type Practice struct {
 	ID             string    `dynamo:"id" json:"id"`
 	UserID         string    `dynamo:"userId" json:"userId"`
-	StartTime      time.Time `dynamo:"startTime" json:"startTime"`
-	EndTime        time.Time `dynamo:"endTime" json:"endTime"`
+	Start          time.Time `dynamo:"start" json:"start"`
+	End            time.Time `dynamo:"end" json:"end"`
 	AdditionalData string    `dynamo:"additionalData,omitempty" json:"additionalData,omitempty"`
 }
 
