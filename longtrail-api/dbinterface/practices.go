@@ -88,11 +88,11 @@ func (p *Practices) GetPractices(userID string, start, end time.Time) ([]Practic
 	query := table.Get(index.PrimaryKey, userID).Index(p.UserTimeIndexName)
 
 	if !start.IsZero() && !end.IsZero() {
-		query = query.Range(index.SortKey, dynamo.Between, start, end)
+		query = query.Range(index.SortKey, dynamo.Between, start.UTC(), end.UTC())
 	} else if !start.IsZero() {
-		query = query.Range(index.SortKey, dynamo.GreaterOrEqual, start)
+		query = query.Range(index.SortKey, dynamo.GreaterOrEqual, start.UTC())
 	} else if !end.IsZero() {
-		query = query.Range(index.SortKey, dynamo.LessOrEqual, end)
+		query = query.Range(index.SortKey, dynamo.LessOrEqual, end.UTC())
 	}
 
 	err = query.All(&result)

@@ -63,6 +63,7 @@ func getPractices(ctx *dispatch.Context) ([]dbinterface.Practice, error) {
 	if ok {
 		var err error
 		windowStart, err = time.Parse(time.RFC3339, start)
+		windowStart = windowStart.UTC()
 		if err != nil {
 			return nil, err
 		}
@@ -72,6 +73,7 @@ func getPractices(ctx *dispatch.Context) ([]dbinterface.Practice, error) {
 	if ok {
 		var err error
 		windowEnd, err = time.Parse(time.RFC3339, end)
+		windowEnd = windowEnd.UTC()
 		if err != nil {
 			return nil, err
 		}
