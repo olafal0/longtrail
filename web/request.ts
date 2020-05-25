@@ -15,6 +15,9 @@ export default {
         Authorization: session.getIdToken().getJwtToken(),
       },
     });
+    if (response.status >= 300) {
+      throw `${response.status}: ${response.statusText}`;
+    }
     return response.json();
   },
 
@@ -29,6 +32,24 @@ export default {
       },
       body: JSON.stringify(data),
     });
+    if (response.status >= 300) {
+      throw `${response.status}: ${response.statusText}`;
+    }
+    return response.json();
+  },
+
+  delete: async (url) => {
+    const session = await Auth.currentSession();
+    const response = await fetch(url, {
+      method: 'DELETE',
+      mode: 'cors',
+      headers: {
+        Authorization: session.getIdToken().getJwtToken(),
+      },
+    });
+    if (response.status >= 300) {
+      throw `${response.status}: ${response.statusText}`;
+    }
     return response.json();
   },
 };

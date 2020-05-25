@@ -1,6 +1,7 @@
 package dbinterface
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -20,11 +21,11 @@ type PracticeModifier interface {
 
 // A Practice is a logged practice session, associated with a user.
 type Practice struct {
-	ID             string    `dynamo:"id" json:"id"`
-	UserID         string    `dynamo:"userId" json:"userId"`
-	Start          time.Time `dynamo:"start" json:"start"`
-	End            time.Time `dynamo:"end" json:"end"`
-	AdditionalData string    `dynamo:"additionalData,omitempty" json:"additionalData,omitempty"`
+	ID             string          `dynamo:"id" json:"id"`
+	UserID         string          `dynamo:"userId" json:"userId"`
+	Start          time.Time       `dynamo:"start" json:"start"`
+	End            time.Time       `dynamo:"end" json:"end"`
+	AdditionalData json.RawMessage `dynamo:"additionalData,omitempty" json:"additionalData,omitempty"`
 }
 
 // HashKey fulfills the dynamo.Keyed interface.
@@ -86,12 +87,12 @@ func (p *Practices) GetPractices(userID string, start, end time.Time) ([]Practic
 	table := db.Table(p.Dynamo.TableName)
 	query := table.Get(index.PrimaryKey, userID).Index(p.UserTimeIndexName)
 
-	if !start.IsZero() {
+	if !start.IsZero() && !end.IsZero() {
+		query = query.Range(index.SortKey, dynamo.Between, start, end)
+	} else if !start.IsZero() {
 		query = query.Range(index.SortKey, dynamo.GreaterOrEqual, start)
-	}
-
-	if !end.IsZero() {
-		query = query.Range(index.SortKey, dynamo.Less, end)
+	} else if !end.IsZero() {
+		query = query.Range(index.SortKey, dynamo.LessOrEqual, end)
 	}
 
 	err = query.All(&result)

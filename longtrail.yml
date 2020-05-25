@@ -79,7 +79,6 @@ Resources:
   EventsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-events
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S

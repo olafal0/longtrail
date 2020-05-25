@@ -85,6 +85,11 @@ func getPractices(ctx *dispatch.Context) ([]dbinterface.Practice, error) {
 }
 
 func setPractice(practice dbinterface.Practice, ctx *dispatch.Context) error {
+	id, ok := ctx.PathVars["id"]
+	if !ok || id == "undefined" || id == "null" {
+		return errorMissingID
+	}
+	practice.ID = id
 	userID, err := ctxToUserID(ctx.LambdaRequest.RequestContext)
 	if err != nil {
 		return err

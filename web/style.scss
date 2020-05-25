@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@500&display=swap');
+
+$primary: rgb(34, 88, 23);
+$secondary: rgb(44, 141, 24);
+$info: rgb(187, 239, 255);
+
+$font-family-base: 'Work Sans', 'Arial Narrow Bold', sans-serif;
+
+.fc-event {
+  // color: $bg-dark !important;
+  background-color: $secondary !important;
+}
+
+@import 'node_modules/bootstrap/scss/bootstrap';

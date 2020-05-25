@@ -2,6 +2,7 @@
   import { Calendar } from "@fullcalendar/core";
   import timeGridPlugin from "@fullcalendar/timegrid";
   import interaction from "@fullcalendar/interaction";
+  import bootstrapPlugin from "@fullcalendar/bootstrap";
   import { onMount, onDestroy, createEventDispatcher } from "svelte";
 
   import "@fullcalendar/core/main.css";
@@ -15,7 +16,8 @@
 
   onMount(() => {
     calendar = new Calendar(domCalendar, {
-      plugins: [timeGridPlugin, interaction],
+      plugins: [timeGridPlugin, interaction, bootstrapPlugin],
+      themeSystem: "bootstrap",
       dateClick: event => dispatch("dateClick", event),
       eventClick: event => dispatch("eventClick", event),
       eventDragStart: event => dispatch("eventDragStart", event),

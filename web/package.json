@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@aws-amplify/auth": "^3.2.8",
+    "@fullcalendar/bootstrap": "^4.4.0",
     "@fullcalendar/core": "^4.4.0",
     "@fullcalendar/interaction": "^4.4.0",
     "@fullcalendar/timegrid": "^4.4.0",
