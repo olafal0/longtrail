@@ -20,7 +20,7 @@
   }
 </script>
 
-<div>
+<div class="app-container">
   <nav class="navbar bg-primary">
     <button class="btn btn-clear text-light">Longtrail</button>
     {#if user}

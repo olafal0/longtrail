@@ -6,7 +6,7 @@
 
   const fcConfig = {
     height: "auto",
-    minTime: "07:00:00",
+    minTime: "06:00:00",
     allDaySlot: false,
     events: loadEvents
   };
@@ -24,6 +24,12 @@
   });
 
   async function loadEvents(info) {
+    // Remove existing events. This prevents seeing duplicates when an event is
+    // recently created, but also gets loaded from the backend. If fc isn't set
+    // yet, we don't need to worry about duplicates.
+    if (fc) {
+      fc.getEvents().forEach(e => e.remove());
+    }
     const events = await api.getPractices(info.startStr, info.endStr);
     const eventObjects = events.map(e => ({
       startEditable: true,
