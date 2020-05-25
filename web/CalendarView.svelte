@@ -7,7 +7,13 @@
   const fcConfig = {
     height: "auto",
     minTime: "06:00:00",
+    slotDuration: "00:15:00",
     allDaySlot: false,
+    header: {
+      left: "prev,next today",
+      center: "title",
+      right: "timeGridWeek,timeGridDay"
+    },
     events: loadEvents
   };
 
