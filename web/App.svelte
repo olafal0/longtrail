@@ -22,7 +22,7 @@
 
 <div class="app-container">
   <nav class="navbar bg-primary">
-    <button class="btn btn-clear text-light">Longtrail</button>
+    <button class="btn btn-clear text-light">Long Trail</button>
     {#if user}
       <div class="right">
         <span class="text-light">{user.username}</span>

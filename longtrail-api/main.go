@@ -4,8 +4,6 @@ import (
 	"longtrail-api/config"
 	"longtrail-api/dbinterface"
 
-	"github.com/aws/aws-lambda-go/events"
-
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/flick-web/dispatch"
 )
@@ -19,7 +17,6 @@ func main() {
 	db = dbinterface.NewModifier(conf)
 
 	api = &dispatch.API{}
-	api.AddEndpoint("GET/echo", echoHandler)
 	api.AddEndpoint("POST/practices/new", createPractice)
 	api.AddEndpoint("GET/practice/{id}", getPractice)
 	api.AddEndpoint("GET/practices", getPractices)
@@ -27,8 +24,4 @@ func main() {
 	api.AddEndpoint("DELETE/practice/{id}", deletePractice)
 
 	lambda.Start(api.LambdaProxy)
-}
-
-func echoHandler(ctx *dispatch.Context) *events.APIGatewayProxyRequest {
-	return ctx.LambdaRequest
 }

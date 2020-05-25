@@ -205,9 +205,9 @@ Resources:
       AdminCreateUserConfig:
         UnusedAccountValidityDays: 30
         InviteMessageTemplate:
-          EmailSubject: Welcome to Longtrail@GMCMF
+          EmailSubject: Welcome to LongTrail@GMCMF
           EmailMessage:
-            "<p>You have been invited to use Longtrail to schedule your
+            "<p>You have been invited to use Long Trail to schedule your
             lessons for this session of GMCMF. You can log in at the following link:</p>
             <p><tbd></p>
             <p>
