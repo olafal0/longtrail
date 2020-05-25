@@ -37,7 +37,6 @@
       ...e,
       ...(e.additionalData || {})
     }));
-    console.log(eventObjects);
     return eventObjects;
   }
 
@@ -74,7 +73,6 @@
   }
 
   async function updateEvent({ detail: eventDrop }) {
-    console.log(eventDrop.event.extendedProps);
     const event = {
       ...eventDrop.event.extendedProps,
       id: eventDrop.event.id,
