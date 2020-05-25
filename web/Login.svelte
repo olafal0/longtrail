@@ -146,26 +146,23 @@
           bind:this={mainForm}
           formFields={initialFormFields}
           on:submit={signIn}>
-          <button
+          <input
+            type="button"
             class="btn btn-secondary"
-            on:click|preventDefault={() => signUp(mainForm.getFormData())}>
-            Register
-          </button>
-          <button type="submit" class="btn btn-primary">Log In</button>
+            on:click={() => signUp(mainForm.getFormData())}
+            value="Register" />
+          <input type="submit" class="btn btn-primary" value="Log In" />
         </Form>
       {:else if flowState === FlowState.signUpConfirmation}
         <Form
           bind:this={mainForm}
           formFields={signUpConfirmationFormFields}
           on:submit={confirmSignUp}>
-          <!-- TODO: Pressing return in this form resends the confirmation code,
-          instead of calling confirmSignUp -->
-          <button
+          <input
             class="btn btn-secondary"
-            on:click|preventDefault={() => resendCode(mainForm.getFormData())}>
-            Resend Confirmation Code
-          </button>
-          <button type="submit" class="btn btn-primary">Confirm</button>
+            on:click={() => resendCode(mainForm.getFormData())}
+            value="Resend Confirmation Code" />
+          <input type="submit" class="btn btn-primary" value="Confirm" />
         </Form>
       {/if}
     </div>
