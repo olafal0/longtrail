@@ -93,4 +93,5 @@
   bind:this={calendarComponent}
   on:dateClick={dateClick}
   on:eventClick={eventClick}
-  on:eventDrop={updateEvent} />
+  on:eventDrop={updateEvent}
+  on:eventResize={updateEvent} />
