@@ -4,6 +4,13 @@
   import Login from "./Login.svelte";
 
   let user = null;
+  let navbarActions = [
+    {
+      text: "Log Out",
+      clicked: logout
+    }
+  ];
+  let calendarActions = [];
 
   function signedIn() {
     Auth.currentAuthenticatedUser()
@@ -20,18 +27,28 @@
   }
 </script>
 
+<style>
+  .nav-item {
+    margin: 0 5px;
+  }
+</style>
+
 <div class="app-container">
   <nav class="navbar bg-primary">
-    <button class="btn btn-clear text-light">Long Trail</button>
+    <button class="btn btn-clear text-light navbar-brand">Long Trail</button>
     {#if user}
       <div class="right">
         <span class="text-light">{user.username}</span>
-        <button class="btn bg-light" on:click={logout}>Log Out</button>
+        {#each [...calendarActions, ...navbarActions] as action}
+          <button class="nav-item btn bg-light" on:click={action.clicked}>
+            {action.text}
+          </button>
+        {/each}
       </div>
     {/if}
   </nav>
   {#if user}
-    <CalendarView />
+    <CalendarView bind:navbarActions={calendarActions} />
   {:else}
     <Login on:signedIn={signedIn} />
   {/if}

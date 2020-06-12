@@ -1,8 +1,12 @@
 <script>
-  import FullCalendar from "./FullCalendar.svelte";
+  import FullCalendar from "./FullCalendar";
+  import Modal from "./Modal";
+  import Toast from "./Toast";
+  import ReportExport from "./ReportExport";
   import { onMount } from "svelte";
   import api from "./api";
-  import { addMinutes } from "./vanillaDate";
+  import { addMinutes, addDays } from "./vanillaDate";
+  import generateTextReport from "./reportGen";
 
   const fcConfig = {
     height: "auto",
@@ -22,21 +26,32 @@
     defaultDuration: 60
   };
 
+  export let navbarActions;
   let calendarComponent;
   let fc;
+  let toasts;
+  let showExportModal = false;
+  let reportEvents;
+
+  const exportLogNavbarAction = {
+    text: "Export Log",
+    created: null,
+    clicked: generateLog
+  };
 
   onMount(() => {
     fc = calendarComponent.getCalendar();
+    navbarActions = [exportLogNavbarAction];
   });
 
-  async function loadEvents(info) {
+  async function loadEvents({ startStr, endStr }) {
     // Remove existing events. This prevents seeing duplicates when an event is
     // recently created, but also gets loaded from the backend. If fc isn't set
     // yet, we don't need to worry about duplicates.
     if (fc) {
       fc.getEvents().forEach(e => e.remove());
     }
-    const events = await api.getPractices(info.startStr, info.endStr);
+    const events = await api.getPractices(startStr, endStr);
     const eventObjects = events.map(e => ({
       startEditable: true,
       durationEditable: true,
@@ -64,18 +79,29 @@
     const addedEvent = fc.addEvent({ start, end, title: "Saving..." });
 
     // Create event through API to get event ID
-    const eventId = await api.createPractice(event);
-    event.id = eventId;
-
-    // Remove fc event and add real one, with correct ID
-    addedEvent.remove();
-    fc.addEvent(event);
+    try {
+      const eventId = await api.createPractice(event);
+      event.id = eventId;
+      // Add real event with correct ID
+      fc.addEvent(event);
+    } catch (e) {
+      toasts.addError(e);
+    } finally {
+      // Remove fake placeholder event
+      addedEvent.remove();
+    }
   }
 
   async function eventClick({ detail: eventElement }) {
+    // https://fullcalendar.io/docs/eventRender
+    // hook for modifying event DOM
     const event = eventElement.event;
-    await api.deletePractice(event.id);
-    event.remove();
+    try {
+      await api.deletePractice(event.id);
+      event.remove();
+    } catch (e) {
+      toasts.addError(e);
+    }
   }
 
   async function updateEvent({ detail: eventDrop }) {
@@ -87,9 +113,25 @@
     };
     try {
       await api.setPractice(event);
-    } catch (err) {
-      console.error(err);
+    } catch (e) {
+      toasts.addError(e);
       eventDrop.revert();
+    }
+  }
+
+  async function generateLog() {
+    const now = new Date();
+    const startStr = addDays(now, -7).toISOString();
+    const endStr = now.toISOString();
+    const loadingNotification = toasts.addMsg("Loading...");
+    try {
+      const events = await api.getPractices(startStr, endStr);
+      reportEvents = generateTextReport(events);
+      showExportModal = true;
+    } catch (e) {
+      toasts.addError(e);
+    } finally {
+      loadingNotification.remove();
     }
   }
 </script>
@@ -101,3 +143,9 @@
   on:eventClick={eventClick}
   on:eventDrop={updateEvent}
   on:eventResize={updateEvent} />
+
+{#if showExportModal}
+  <ReportExport {reportEvents} on:close={() => (showExportModal = false)} />
+{/if}
+
+<Toast bind:this={toasts} />
