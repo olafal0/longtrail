@@ -31,11 +31,15 @@
   .nav-item {
     margin: 0 5px;
   }
+
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
 </style>
 
 <div class="app-container">
   <nav class="navbar bg-primary">
-    <button class="btn btn-clear text-light navbar-brand">Long Trail</button>
+    <div class="btn btn-clear text-light navbar-brand">Long Trail</div>
     {#if user}
       <div class="right">
         <span class="text-light">{user.username}</span>
