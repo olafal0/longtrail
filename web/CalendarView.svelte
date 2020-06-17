@@ -33,6 +33,9 @@
   let showExportModal = false;
   let reportEvents;
 
+  let editingEvent = null;
+  let editingEventTitle = "";
+
   const exportLogNavbarAction = {
     text: "Export Log",
     created: null,
@@ -92,16 +95,34 @@
     }
   }
 
-  async function eventClick({ detail: eventElement }) {
-    // https://fullcalendar.io/docs/eventRender
-    // hook for modifying event DOM
-    const event = eventElement.event;
+  async function deleteEvent() {
     try {
-      await api.deletePractice(event.id);
-      event.remove();
+      await api.deletePractice(editingEvent.id);
+      editingEvent.remove();
     } catch (e) {
       toasts.addError(e);
+    } finally {
+      editingEvent = null;
     }
+  }
+
+  function eventClick({ detail: eventElement }) {
+    // Set the clicked event as the currently editing event
+    const event = eventElement.event;
+    editingEventTitle = event.title;
+    editingEvent = event;
+  }
+
+  async function updateEditedEvent() {
+    // Updating the title requires editing the title in FullCalendar as well
+    // as saving the title to additionalData
+    editingEvent.setProp("title", editingEventTitle);
+    editingEvent.setExtendedProp("additionalData", {
+      ...editingEvent.additionalData,
+      title: editingEventTitle
+    });
+    await updateEvent({ detail: { event: editingEvent } });
+    editingEvent = null;
   }
 
   async function updateEvent({ detail: eventDrop }) {
@@ -134,6 +155,16 @@
       loadingNotification.remove();
     }
   }
+
+  function shortTime(date) {
+    const dayFormatOptions = {
+      weekday: "short",
+      hour: "numeric",
+      minute: "numeric",
+      timeZoneName: "short"
+    };
+    return new Intl.DateTimeFormat("en-US", dayFormatOptions).format(date);
+  }
 </script>
 
 <FullCalendar
@@ -146,6 +177,47 @@
 
 {#if showExportModal}
   <ReportExport {reportEvents} on:close={() => (showExportModal = false)} />
+{/if}
+
+{#if editingEvent}
+  <Modal
+    on:close={() => {
+      editingEvent = null;
+    }}>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Edit Event</h5>
+        <p>
+          <i>
+            From {shortTime(editingEvent.start)} to {shortTime(editingEvent.end)}
+          </i>
+        </p>
+        <form on:submit|preventDefault={updateEditedEvent}>
+          <div>
+            <label>
+              Title:
+              <p>
+                <input type="text" bind:value={editingEventTitle} />
+              </p>
+            </label>
+          </div>
+          <input
+            type="button"
+            class="btn btn-secondary"
+            on:click={() => {
+              editingEvent = null;
+            }}
+            value="Cancel" />
+          <input
+            type="button"
+            class="btn btn-danger"
+            on:click={deleteEvent}
+            value="Delete" />
+          <input type="submit" class="btn btn-primary" value="Update" />
+        </form>
+      </div>
+    </div>
+  </Modal>
 {/if}
 
 <Toast bind:this={toasts} />
