@@ -33,7 +33,7 @@
   }
 
   .navbar-brand {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 </style>
 
