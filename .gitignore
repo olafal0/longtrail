@@ -3,3 +3,4 @@
 **/.cache
 tmp
 web/config.js
+scripts/env.sh
