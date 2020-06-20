@@ -17,6 +17,11 @@ Conditions:
       - Fn::Equals:
         - ""
         - !Ref WebhookURL
+  HasSenderEmail:
+    Fn::Not:
+      - Fn::Equals:
+        - ""
+        - !Ref SenderEmailArn
 
 Resources:
   LambdaRole:
@@ -133,7 +138,6 @@ Resources:
     Properties:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref LongtrailAPICognitoAuthorizer
-      # ApiKeyRequired: true
       HttpMethod: ANY
       ResourceId: !Ref BackendAPIMainResource
       RestApiId: !Ref BackendAPI
@@ -151,7 +155,6 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
-      # ApiKeyRequired: true
       HttpMethod: OPTIONS
       ResourceId: !Ref BackendAPIMainResource
       RestApiId: !Ref BackendAPI
@@ -177,31 +180,11 @@ Resources:
       RestApiId: !Ref BackendAPI
       DeploymentId: !Ref BackendAPIDeployment
       StageName: api
-  # BackendAPIKey:
-  #   Type: AWS::ApiGateway::ApiKey
-  #   DependsOn:
-  #     - BackendAPIDeployment
-  #   Properties:
-  #     Enabled: true
-  #     StageKeys:
-  #       - RestApiId: !Ref BackendAPI
-  #         StageName: !Ref BackendAPIStage
-  # BackendAPIUsagePlan:
-  #   Type: AWS::ApiGateway::UsagePlan
-  #   DependsOn:
-  #     - BackendAPIKey
-  #   Properties:
-  #     ApiStages:
-  #       - ApiId: !Ref BackendAPI
-  #         Stage: !Ref BackendAPIStage
-  # BackendAPIUsagePlanKey:
-  #   Type: AWS::ApiGateway::UsagePlanKey
-  #   DependsOn:
-  #     - BackendAPIUsagePlan
-  #   Properties:
-  #     KeyId: !Ref BackendAPIKey
-  #     KeyType: API_KEY
-  #     UsagePlanId: !Ref BackendAPIUsagePlan
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: 10
+          ThrottlingBurstLimit: 10
 
   LongtrailUserPool:
     Type: AWS::Cognito::UserPool
@@ -220,8 +203,11 @@ Resources:
           - PostConfirmation: !GetAtt AlertsLambda.Arn
           - !Ref AWS::NoValue
       EmailConfiguration:
-        EmailSendingAccount: DEVELOPER
-        SourceArn: !Ref SenderEmailArn
+        Fn::If:
+          - HasSenderEmail
+          - EmailSendingAccount: DEVELOPER
+            SourceArn: !Ref SenderEmailArn
+          - EmailSendingAccount: COGNITO_DEFAULT
       EmailVerificationMessage: |
         <p>Thank you for signing up for Long Trail! Your verification code is here:</p>
         <p><b>{####}</b></p>
