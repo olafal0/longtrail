@@ -10,7 +10,7 @@ test:
   stage: test
   only:
     changes:
-      - 'longtrail-api/**/*'
+      - "longtrail-api/**/*"
   script:
     - cd longtrail-api
     - go fmt
@@ -21,7 +21,7 @@ deploy development:
   stage: deploy-dev
   only:
     changes:
-      - 'longtrail-api/**/*'
+      - "longtrail-api/**/*"
       - deployment-prereq.yml
       - longtrail.yml
   script:
@@ -56,7 +56,8 @@ pages:
   script:
     - cd web
     - npm ci
-    - ./node_modules/parcel/bin/cli.js build index.html --no-source-maps --public-url ./
+    - ./node_modules/parcel/bin/cli.js build index.html --no-source-maps --experimental-scope-hoisting --public-url ./
+    - gzip -k -9 $(find dist -type f)
     - cp -r dist ../public
   artifacts:
     paths:
