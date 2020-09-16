@@ -15,8 +15,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
-github.com/flick-web/dispatch v0.0.2 h1:ET1kFrj1UYM0T7Ig6i+Hd41I9yQeCq6c2Ps40D0yaiY=
-github.com/flick-web/dispatch v0.0.2/go.mod h1:MwMty7BDFMzXCEGeh7uILcm6TmfXTzBVWb8h0RUW+BQ=
+github.com/flick-web/dispatch v0.0.4 h1:ZaKn9dHcVjI5wAuwQiB7BaNKVGXO07Ed/gZCIUuxb9w=
+github.com/flick-web/dispatch v0.0.4/go.mod h1:MwMty7BDFMzXCEGeh7uILcm6TmfXTzBVWb8h0RUW+BQ=
 github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=

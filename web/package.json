@@ -1,7 +1,7 @@
 {
   "name": "longtrail-web",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Frontend for Long Trail website",
   "main": "index.js",
   "author": "olafalo",
   "license": "MIT",

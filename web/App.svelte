@@ -94,10 +94,6 @@
             https://github.com/olafal0/longtrail
           </a>
         </p>
-        <p>
-          Thank you to Kevin and Barbara Lawrence, without whom I would not be
-          where I am today. Much love, and happy father's day ♥
-        </p>
         <button
           class="btn btn-primary mx-auto"
           on:click={() => {
